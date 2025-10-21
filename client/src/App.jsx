@@ -1,26 +1,33 @@
-import React from 'react'
-import { Route, Routes } from 'react-router-dom'
-import Home from './pages/Home'
-import Layout from './pages/Layout'
-import Dashboard from './pages/Dashboard'
-import Login from './pages/Login'
+import React from 'react';
+import { Route, Routes } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import Home from './pages/Home';
+import Layout from './pages/Layout';
+import Dashboard from './pages/Dashboard';
+import Login from './pages/Login';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const App = () => {
   return (
-    <>
+    <AuthProvider>
       <Routes>
-
-        <Route path='/' element={<Home/>}/>  {/* home page */}
-
-        <Route path='/app' element={<Layout/>}>
-          <Route index element={<Dashboard/>}/> {/* index means : When the parent route path matches exactly, render this element. */}
+        <Route path='/' element={<Home />} />
+        
+        <Route path='/login' element={<Login />} />
+        
+        <Route
+          path='/app'
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Dashboard />} />
         </Route>
-
-        <Route path='/login' element={<Login/>}/>
-  
       </Routes>
-    </>
-  )
-}
+    </AuthProvider>
+  );
+};
 
-export default App
+export default App;

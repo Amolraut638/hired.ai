@@ -1,5 +1,6 @@
+import { AudioLinesIcon, MicIcon } from 'lucide-react';
 import React from 'react'
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 
 const Hero = () => {
 
@@ -41,11 +42,11 @@ const logos = [
                 </div>
 
                 <div className="flex gap-2">
-                    <Link to='/app?state=register' className="hidden md:block px-6 py-2 bg-purple-500 hover:bg-purple-700 active:scale-95 transition-all rounded-full text-white">
+                    <Link to='/login?state=register' className="hidden md:block px-6 py-2 bg-purple-500 hover:bg-purple-700 active:scale-95 transition-all rounded-full text-white">
                         Get started
                     </Link>
                     
-                    <Link to='/app?state=login' className="hidden md:block px-6 py-2 border active:scale-95 hover:bg-slate-50 transition-all rounded-full text-slate-700 hover:text-slate-900" >
+                    <Link to='/login?state=login' className="hidden md:block px-6 py-2 border active:scale-95 hover:bg-slate-50 transition-all rounded-full text-slate-700 hover:text-slate-900" >
                         Login
                     </Link>
                 </div>
@@ -65,7 +66,7 @@ const logos = [
                 <a href="#features" className="text-white">Features</a>
                 <a href="#Testimonials" className="text-white">Testimonials</a>
                 <a href="#contact" className="text-white">Contact</a>
-                <Link to='/app?state=login' className="text-white" >
+                <Link to='/login?state=login : register' className="text-white" >
                     Login
                 </Link>
                 <button onClick={() => setMenuOpen(false)} className="active:ring-3 active:ring-white aspect-square size-10 p-1 items-center justify-center bg-purple-600 hover:bg-purple-700 transition text-white rounded-md flex" >
@@ -104,17 +105,13 @@ const logos = [
                     Land your dream job with <span className=" bg-gradient-to-r from-purple-700 to-purple-600 bg-clip-text text-transparent text-nowrap">AI-powered </span> interview practices.
                 </h1>
 
-                <p className="max-w-md text-center text-base my-7">Prepare, practice and master interviews with AI-powered feedbacks.</p>
+                <p className="max-w-md text-center text-base my-7">Prepare, practice with real interview questions and instant feedbacks.</p>
 
                 {/* CTA Buttons */}
                 <div className="flex items-center gap-4 ">
-                    <Link to='/app' className="bg-purple-500 hover:bg-purple-600 text-white rounded-full px-9 h-12 m-1 ring-offset-2 ring-1 ring-purple-400 flex items-center transition-colors">
-                        Get started
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-right ml-1 size-4" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
-                    </Link>
-                    <button className="flex items-center gap-2 border border-slate-400 hover:bg-green-50 transition rounded-full px-7 h-12 text-slate-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-video size-5" aria-hidden="true"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"></path><rect x="2" y="6" width="14" height="12" rx="2"></rect></svg>
-                        <span>Try demo</span>
+                    <button className="flex items-center gap-2 border border-slate-400 hover:bg-purple-200 transition rounded-full px-7 h-12 text-slate-700">
+                        <AudioLinesIcon className='size-4'/>
+                        <span className='font-medium'>Start Interview</span>
                     </button>
                 </div>
 

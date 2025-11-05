@@ -12,7 +12,7 @@ const Footer = () => {
                 }
             `}</style>
 
-            <footer className="flex flex-wrap justify-center lg:justify-between overflow-hidden gap-10 md:gap-20 py-16 px-6 md:px-16 lg:px-24 xl:px-32 text-[13px] text-gray-500 bg-gradient-to-r from-purple-50 via-purple-300/60 to-purple-50 mt-40">
+            <footer className="flex flex-wrap justify-center lg:justify-between overflow-hidden gap-10 md:gap-20 py-16 px-6 md:px-16 lg:px-24 xl:px-32 text-[13px] text-gray-500 bg-gradient-to-r from-purple-20 via-purple-200 to-purple-20 mt-40">
                 <div className="flex flex-wrap items-start gap-10 md:gap-[60px] xl:gap-[140px]">
                     <a href="#">
                         <img src='/logo.svg' alt="logo" className='h-8 w-auto' />
@@ -32,7 +32,7 @@ const Footer = () => {
                             <li><a href="/" className="hover:text-purple-600 transition">Company</a></li>
                             <li><a href="/" className="hover:text-purple-600 transition">Blogs</a></li>
                             <li><a href="/" className="hover:text-purple-600 transition">Community</a></li>
-                            <li><a href="/" className="hover:text-purple-600 transition">Careers</a></li>  {/* <span className="text-xs text-white bg-green-600 rounded-md ml-2 px-2 py-1">We’re hiring!</span> */}
+                            <li><a href="/" className="hover:text-purple-600 transition">Careers</a></li>  {/* <span className="text-xs text-white bg-green-600 rounded-md ml-2 px-2 py-1">We’re hiring!</span>  */}
                             <li><a href="/" className="hover:text-purple-600 transition">About</a></li>
                         </ul>
                     </div>

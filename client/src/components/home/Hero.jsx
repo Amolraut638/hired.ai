@@ -7,11 +7,13 @@ const Hero = () => {
     const [menuOpen, setMenuOpen] = React.useState(false);
 
 const logos = [
-        'https://saasly.prebuiltui.com/assets/companies-logo/instagram.svg',
-        'https://saasly.prebuiltui.com/assets/companies-logo/framer.svg',
-        'https://saasly.prebuiltui.com/assets/companies-logo/microsoft.svg',
-        'https://saasly.prebuiltui.com/assets/companies-logo/huawei.svg',
-        'https://saasly.prebuiltui.com/assets/companies-logo/walmart.svg',
+    'https://img.icons8.com/fluency/48/linkedin.png',
+    
+    'https://img.icons8.com/fluency/48/facebook-new.png',
+    'https://img.icons8.com/ios/50/ibm.png',
+    'https://img.icons8.com/color/48/microsoft.png',
+    'https://img.icons8.com/color/48/walmart.png',
+    'https://img.icons8.com/color/48/google-logo.png',
 ]
 
     const handleSmoothScroll = (e, targetId) => {
@@ -82,7 +84,7 @@ const logos = [
                 <div className="flex items-center mt-24">
                     <div className="flex -space-x-3 pr-3">
                         <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200" alt="user3" className="size-8 object-cover rounded-full border-2 border-white hover:-translate-y-0.5 transition z-[1]" />
-                        <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=200" alt="user1" className="size-8 object-cover rounded-full border-2 border-white hover:-translate-y-0.5 transition z-2" />
+                        <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=200" alt="user1" className="size-8 object-cover rounded-full border-2 border-white hover:-translate-y-0.5 transition z-[2]" />
                         <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200" alt="user2" className="size-8 object-cover rounded-full border-2 border-white hover:-translate-y-0.5 transition z-[3]" />
                         <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200" alt="user3" className="size-8 object-cover rounded-full border-2 border-white hover:-translate-y-0.5 transition z-[4]" />
                         <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="user5" className="size-8 rounded-full border-2 border-white hover:-translate-y-0.5 transition z-[5]" />
@@ -95,7 +97,7 @@ const logos = [
                             ))}
                         </div>
                         <p className="text-sm text-gray-700">
-                            Used by 1000+ users
+                            Used by 100+ users
                         </p>
                     </div>
                 </div>
@@ -109,16 +111,16 @@ const logos = [
 
                 {/* CTA Buttons */}
                 <div className="flex items-center gap-4 ">
-                    <button className="flex items-center gap-2 border border-slate-400 hover:bg-purple-200 transition rounded-full px-7 h-12 text-slate-700">
+                    <button className="flex items-center gap-2 border border-slate-500  hover:border-purple-600 hover:bg-purple-600 hover:text-white cursor-pointer transition rounded-full px-7 h-12 text-slate-700">
                         <AudioLinesIcon className='size-4'/>
                         <span className='font-medium'>Start Interview</span>
                     </button>
                 </div>
 
-                <p className="py-6 text-slate-600 mt-14">Trusted by top companies, including</p>
+                <p className="py-6 text-slate-600 mt-14 mb-4">Trusted by top companies, including</p>
 
-                <div className="flex flex-wrap justify-between max-sm:justify-center gap-6 max-w-3xl w-full mx-auto py-4" id="logo-container">
-                    {logos.map((logo, index) => <img key={index} src={logo} alt="logo" className="h-6 w-auto max-w-xs" />)}
+                  <div className="flex flex-wrap justify-between max-sm:justify-center gap-6 max-w-3xl w-full mx-auto py-4 opacity-80" id="logo-container">
+                      {logos.map((logo, index) => <img key={index} src={logo} alt="logo" className="h-10 w-auto max-w-xs" />)}
                 </div>
             </div>
         </div>

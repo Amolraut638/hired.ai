@@ -19,3 +19,5 @@ export default User;  // with the help of this we can use this schema in any oth
 
 
 //now we have to create the function to store the data into the database so we make the controller folder
+
+

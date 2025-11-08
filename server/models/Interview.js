@@ -1,27 +1,30 @@
-import mongoose from "mongoose";
-
 const InterviewSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  position: String,
-  companyName: String,
-  jobDescription: String,
-  interviewType: String,
-  difficulty: { type: String, enum: ["easy", "medium", "hard"], default: "medium" },
-  duration: String,
+  position: { type: String, required: true },
+  companyName: { type: String },
+  jobDescription: { type: String },
+  interviewType: { type: String, default: "Technical" },
+  difficulty: {
+    type: String,
+    enum: ["easy", "medium", "hard"],
+    default: "medium",
+  },
+  duration: { type: String, default: "30 min" },
   questions: [
     {
-      questionText: String,
-      userAnswer: String,
-      aiFeedback: String,
-      score: Number
-    }
+      questionText: { type: String, required: true },
+      userAnswer: { type: String },
+      aiFeedback: { type: String },
+      score: { type: Number, min: 0, max: 10 },
+    },
   ],
-  interviewerName: String,
-  scheduledAt: Date,
-  feedback: String,
-  rating: Number,
-  status: { type: String, enum: ["scheduled", "completed", "cancelled"], default: "scheduled" },
+  interviewerName: { type: String, default: "AI Interviewer" },
+  scheduledAt: { type: Date },
+  feedback: { type: String },
+  rating: { type: Number, min: 0, max: 5 },
+  status: {
+    type: String,
+    enum: ["scheduled", "in-progress", "completed", "cancelled"],
+    default: "scheduled",
+  },
 }, { timestamps: true });
-
-const Interview = mongoose.model("Interview", InterviewSchema);
-export default Interview;

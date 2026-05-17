@@ -11,7 +11,7 @@ export const geminiTest = async (req, res) => {
 
     if (!GEMINI_KEY) return res.status(400).json({ success: false, message: 'GEMINI_API_KEY not set' });
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
     const prompt = 'Generate 1 short interview question for "debug test"';
 
     const listModelsUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_KEY}`;

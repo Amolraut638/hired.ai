@@ -18,13 +18,17 @@ const GEMINI_URL =
 
 const extractJsonArray = (text) => {
   try {
-    const parsed = JSON.parse(text);
+    // ✅ Strip markdown code blocks if present
+    const cleaned = text
+      .replace(/```json/gi, "")
+      .replace(/```/g, "")
+      .trim();
+
+    const parsed = JSON.parse(cleaned);
     if (Array.isArray(parsed)) return parsed;
-    // If it's an object that contains an array, try to find it
     for (const key in parsed) {
       if (Array.isArray(parsed[key])) return parsed[key];
     }
-    // If it's a single object, wrap it in an array
     if (typeof parsed === "object" && parsed !== null) return [parsed];
     return null;
   } catch {
@@ -37,8 +41,6 @@ const extractJsonArray = (text) => {
         // fall through
       }
     }
-    
-    // Try to find a single object if array fails
     const objStart = text.indexOf("{");
     const objEnd = text.lastIndexOf("}");
     if (objStart !== -1 && objEnd !== -1 && objEnd > objStart) {
@@ -97,8 +99,8 @@ Rules:
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
         temperature: 0.4,
-        maxOutputTokens: 1000,
-        response_mime_type: "application/json",
+        maxOutputTokens: 4000, // ✅ increased from 1000
+        // ✅ removed response_mime_type
       },
     }),
   });
@@ -109,8 +111,9 @@ Rules:
   }
 
   const data = await resp.json();
-  const text =
-    data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+  console.log("Gemini questions raw:", text.substring(0, 300)); // ✅ debug log
 
   const parsed = extractJsonArray(text);
   if (!parsed) {
@@ -168,8 +171,8 @@ Answer: ${q.userAnswer || ""}
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
         temperature: 0.2,
-        maxOutputTokens: 4000,
-        response_mime_type: "application/json",
+        maxOutputTokens: 8000, // ✅ increased for larger evaluations
+        // ✅ removed response_mime_type
       },
     }),
   });
@@ -180,8 +183,9 @@ Answer: ${q.userAnswer || ""}
   }
 
   const data = await resp.json();
-  const text =
-    data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+  console.log("Gemini eval raw:", text.substring(0, 300)); // ✅ debug log
 
   const parsed = extractJsonArray(text);
   if (!parsed) {

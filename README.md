@@ -11,7 +11,7 @@
 
 **A full-stack MERN application that simulates real interview scenarios using Google Gemini AI — with production-grade system design principles implemented.**
 
-[🚀 Live Demo](#) · [📖 API Docs](#api-endpoints) · [🏗️ Architecture](#system-architecture)
+[🚀 Live Demo](https://hiredaitwo.vercel.app/) · [📖 API Docs](#api-endpoints) · [🏗️ Architecture](#system-architecture)
 
 </div>
 

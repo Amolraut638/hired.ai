@@ -227,13 +227,33 @@ ${dynamicContext}
 
 // ─── Gemini API call ────────────────────────────────────────────────────────
 async function askGemini(history, userMessage) {
-  const formattedConversation = buildConversation(
-    history,
-    userMessage
-  );
+  const dynamicContext = getDynamicContext(userMessage);
+
+  const recentHistory = [
+    ...history.slice(-12),
+  ];
+
+  const enhancedHistory = [
+    {
+      role: "assistant",
+      content: `
+${SYSTEM_PROMPT}
+
+${USER_PROFILE}
+
+${dynamicContext}
+      `,
+    },
+
+    ...recentHistory,
+  ];
 
   const data = await chatbotAPI.sendMessage(
-    formattedConversation
+    enhancedHistory.map((m) => ({
+      role: m.role === "assistant" ? "model" : "user",
+      parts: [{ text: m.content }],
+    })),
+    userMessage
   );
 
   return data.reply;

@@ -2,8 +2,6 @@
 
 <div align="center">
 
-![Hired.AI Banner](./docs/hired.ai.png)
-
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Express](https://img.shields.io/badge/Express-5-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
@@ -327,9 +325,9 @@ npm run dev
 
 ## 👨‍💻 Author
 
-**Your Name**
-- GitHub: [@YOUR_USERNAME](https://github.com/YOUR_USERNAME)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/YOUR_PROFILE)
+**Amol Raut**
+- GitHub: [@Amolraut638](https://github.com/Amolraut638)
+- LinkedIn: [Amol Raut](https://www.linkedin.com/in/amolraut9272)
 
 ---
 

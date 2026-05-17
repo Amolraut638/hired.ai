@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Hired.AI Banner](./architecture-hired.ai.png)
+![Hired.AI Banner](./docs/hired.ai.png)
 
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)

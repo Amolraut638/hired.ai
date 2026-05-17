@@ -1,4 +1,3 @@
-// routes/problemRoute.js
 import express from "express";
 import {
   getAllProblems,
@@ -10,17 +9,23 @@ import {
   updateProblem,
   deleteProblem
 } from "../controllers/problemController.js";
-import protect from "../middlewares/authMiddleware.js"; // Auth middleware
+import protect from "../middlewares/authMiddleware.js";
+import { cacheMiddleware, clearCache } from "../middlewares/cache.js"; // ✅
 
 const problemRouter = express.Router();
 
-// User routes (require authentication)
-problemRouter.get("/", protect, getAllProblems);
+// Cache problems list for 10 minutes
+problemRouter.get("/", protect, cacheMiddleware(600), getAllProblems);
 problemRouter.get("/stats", protect, getUserStats);
 problemRouter.get("/:problemId", protect, getProblemById);
-problemRouter.patch("/:problemId/toggle", protect, toggleProblemStatus);
 
-// Admin routes (add admin middleware if needed)
+// Clear cache when problem status is toggled
+problemRouter.patch("/:problemId/toggle", protect, (req, res, next) => {
+    clearCache(`__cache__/api/problems`);
+    next();
+}, toggleProblemStatus);
+
+// Admin routes
 problemRouter.post("/admin/add", protect, addProblem);
 problemRouter.post("/admin/bulk-add", protect, bulkAddProblems);
 problemRouter.put("/admin/:problemId", protect, updateProblem);

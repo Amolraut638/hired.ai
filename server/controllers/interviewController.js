@@ -1,5 +1,6 @@
 import Interview from "../models/Interview.js";
 import aiService from "../services/aiService.js";
+import { getCache, setCache } from "../middlewares/cache.js";
 
 // Create an interview. Body may include { position, difficulty, questions (optional), generate: true }
 export const createInterview = async (req, res) => {
@@ -9,34 +10,43 @@ export const createInterview = async (req, res) => {
     let generatedQuestions = [];
     let generatedByAI = true;
     let aiError = null;
+
     if (generate) {
       try {
-        console.log('Creating interview — requesting AI questions for', { position, difficulty });
-        
-        // Calculate count based on duration (e.g., 2 min -> 2 questions, 5 min -> 5 questions)
         let count = 5;
         if (duration && duration.includes('min')) {
           const mins = parseInt(duration);
           if (!isNaN(mins)) count = mins;
         }
-        
-        const result = await aiService.generateQuestions({ position, difficulty, count, jobDescription, duration });
-        console.log('aiService.generateQuestions returned', { usedAI: result?.usedAI, error: result?.error, count: Array.isArray(result?.questions) ? result.questions.length : null });
-        if (result && Array.isArray(result.questions)) {
-            // result.questions may be array of objects { question, suggestedAnswer } or strings
+
+        // Check cache before calling Gemini
+        const cacheKey = `questions__${position}__${difficulty}__${count}`;
+        const cachedQuestions = getCache(cacheKey);
+
+        if (cachedQuestions) {
+          console.log(`Cache HIT for questions: ${cacheKey}`);
+          generatedQuestions = cachedQuestions;
+          generatedByAI = true;
+        } else {
+          console.log(`Cache MISS for questions: ${cacheKey} — calling Gemini`);
+          const result = await aiService.generateQuestions({ position, difficulty, count, jobDescription, duration });
+
+          if (result && Array.isArray(result.questions)) {
             generatedQuestions = result.questions.map((q) => {
               if (typeof q === 'string') return { question: q, suggestedAnswer: '' };
               return { question: q.question || q.questionText || q.q || '', suggestedAnswer: q.suggestedAnswer || q.suggested_answer || q.answer || '' };
             });
             generatedByAI = !!result.usedAI;
             aiError = result.error || null;
-          } else if (Array.isArray(result)) {
-            // backward compatibility in case service returned array of strings
-            generatedQuestions = result.map((q) => (typeof q === 'string' ? { question: q, suggestedAnswer: '' } : { question: q.question || '', suggestedAnswer: q.suggestedAnswer || '' }));
+
+            // Store in cache for 1 hour
+            setCache(cacheKey, generatedQuestions, 3600);
+            console.log(`Cached questions for: ${cacheKey}`);
           }
+        }
+
       } catch (err) {
         console.error('aiService.generateQuestions threw:', err);
-        // fallback to simple templates if aiService unexpectedly throws
         const fallback = [];
         let count = 5;
         if (duration && duration.includes('min')) {
@@ -117,11 +127,11 @@ export const submitAnswers = async (req, res) => {
 
       // merge evaluation results into interview.questions
       interview.questions = interview.questions.map((q) => {
-        const match = evalResults.find((e) => (e.question && e.question.trim() === q.questionText.trim()) );
+        const match = evalResults.find((e) => (e.question && e.question.trim() === q.questionText.trim()));
         if (match) {
-          return { 
-            ...q.toObject(), 
-            aiFeedback: match.feedback || match.explanation || "", 
+          return {
+            ...q.toObject(),
+            aiFeedback: match.feedback || match.explanation || "",
             score: match.score || match.points || 0,
             suggestedAnswer: match.suggestedAnswer || match.idealAnswer || match.modelAnswer || q.suggestedAnswer || ''
           };
@@ -132,12 +142,12 @@ export const submitAnswers = async (req, res) => {
       // optional: compute average score
       const avg = interview.questions.reduce((s, q) => s + (q.score || 0), 0) / (interview.questions.length || 1);
       interview.rating = Math.round((avg / 2) * 10) / 10; // 0-5 scale
-      
+
       // Generate a summary feedback if not provided by AI
       if (evalResults.length > 0) {
-          interview.feedback = `Interview completed with an average score of ${(avg).toFixed(1)}/10.`;
+        interview.feedback = `Interview completed with an average score of ${(avg).toFixed(1)}/10.`;
       }
-      
+
       await interview.save();
     } catch (evalErr) {
       console.error("AI Evaluation failed, but interview was saved:", evalErr);

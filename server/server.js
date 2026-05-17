@@ -6,6 +6,7 @@ import express from "express";
 import cors from "cors";
 import connectDB from "./configs/db.js";
 import { generalLimiter, aiLimiter, authLimiter } from "./middlewares/rateLimiter.js";
+import { getCacheStats } from "./middlewares/cache.js"; 
 import userRouter from "./routes/userRoute.js";
 import problemRouter from "./routes/problemRoute.js";
 import interviewRouter from "./routes/interviewRoute.js";
@@ -25,8 +26,12 @@ app.use(cors());
 // General rate limiter applied to ALL routes
 app.use(generalLimiter);
 
-// Routes
-app.get('/', (req, res) => res.send('Server is live...'));
+// Health check with cache stats
+app.get('/', (req, res) => res.json({
+    status: 'Server is live',
+    uptime: `${Math.floor(process.uptime())} seconds`,
+    cache: getCacheStats()
+}));
 
 // Auth limiter — prevents brute force on login/register
 app.use('/api/users', authLimiter, userRouter);

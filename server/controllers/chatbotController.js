@@ -1,9 +1,7 @@
-const GEMINI_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-// "gemini-flash-latest" tracks Google's current Flash model (2.5 was retired for new users).
-const MODEL = process.env.GEMINI_CHAT_MODEL || process.env.GEMINI_MODEL || "gemini-flash-latest";
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+import { generate } from "../services/geminiClient.js";
 
-if (!GEMINI_KEY) throw new Error("GEMINI_API_KEY is required for the chatbot");
+// Chat can use its own model if you set GEMINI_CHAT_MODEL; otherwise it shares GEMINI_MODEL.
+const CHAT_MODEL = process.env.GEMINI_CHAT_MODEL || undefined;
 
 const SYSTEM_PROMPT = `You are Hired.ai's friendly assistant. Hired.ai is an AI-powered interview prep platform.
 Help with: creating interviews, voice interview mode, DSA practice, feedback/scoring, career and interview tips.
@@ -26,7 +24,8 @@ const buildContents = (history, message) => {
     }
   };
 
-  for (const m of Array.isArray(history) ? history.slice(-10) : []) {
+  // Fewer history turns = fewer input tokens = faster replies
+  for (const m of Array.isArray(history) ? history.slice(-6) : []) {
     const role = m?.role === "model" ? "model" : m?.role === "user" ? "user" : null;
     if (!role) continue;
     const text = Array.isArray(m.parts) ? m.parts.map((p) => p?.text ?? "").join("") : "";
@@ -44,45 +43,23 @@ export const chatbotReply = async (req, res) => {
       return res.status(400).json({ error: "Message is required" });
     }
 
-    const resp = await fetch(GEMINI_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": GEMINI_KEY,
-      },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: buildContents(history, message),
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 4096, // generous, because thinking tokens count toward this limit
-        },
-      }),
+    const { text, finishReason, blockReason } = await generate({
+      model: CHAT_MODEL,
+      system: SYSTEM_PROMPT,
+      contents: buildContents(history, message),
+      generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
     });
 
-    if (!resp.ok) {
-      console.error("Gemini chatbot error:", resp.status, await resp.text());
-      // Forward 429 so the client can react; hide upstream details otherwise
-      const status = resp.status === 429 ? 429 : 502;
-      return res.status(status).json({ error: "AI service error" });
-    }
-
-    const data = await resp.json();
-    const candidate = data?.candidates?.[0];
-    const reply = (candidate?.content?.parts || [])
-      .filter((p) => p.text && !p.thought)
-      .map((p) => p.text)
-      .join("")
-      .trim();
-
-    if (!reply) {
-      console.error("Empty Gemini reply:", candidate?.finishReason, data?.promptFeedback);
+    if (!text) {
+      console.error("Empty Gemini reply:", finishReason, blockReason);
       return res.status(502).json({ error: "Empty response from AI" });
     }
 
-    res.json({ reply });
+    res.json({ reply: text });
   } catch (err) {
-    console.error("Chatbot controller error:", err);
-    res.status(500).json({ error: "Chatbot error" });
+    console.error("Chatbot error:", err.message);
+    // Forward 429 so the client can react; hide upstream details otherwise
+    const status = err.status === 429 ? 429 : err.status ? 502 : 500;
+    res.status(status).json({ error: "AI service error" });
   }
 };

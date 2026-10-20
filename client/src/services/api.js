@@ -24,13 +24,29 @@ const apiCall = async (endpoint, options = {}) => {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || `API Error: ${response.status}`);
+      // Body may not be JSON (e.g. an HTML error page), so don't let parsing mask the real error
+      let body = null;
+      try {
+        body = await response.json();
+      } catch {
+        /* ignore */
+      }
+      const err = new Error(body?.message || body?.error || `API Error: ${response.status}`);
+      err.status = response.status; // lets the UI branch on 429 / 401 / 500
+      throw err;
     }
 
     return await response.json();
   } catch (error) {
     console.error(`API call failed for ${endpoint}:`, error);
+
+    // Expired/invalid token on a protected call: clear the session so the user can log in again
+    if (error.status === 401 && token && !endpoint.startsWith('/users/login') && !endpoint.startsWith('/users/register')) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('userId');
+      if (window.location.pathname !== '/login') window.location.assign('/login');
+    }
     throw error;
   }
 };
@@ -151,7 +167,7 @@ export const feedbackAPI = {
     apiCall(`/feedback/user/${userId}`, { method: 'GET' }),
 };
 
-  // Chatbot API
+// Chatbot API
 export const chatbotAPI = {
   sendMessage: (history, message) =>
     apiCall('/chatbot', {

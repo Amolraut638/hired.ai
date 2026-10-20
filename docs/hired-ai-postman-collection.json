@@ -1,0 +1,348 @@
+{
+  "info": {
+    "name": "Hired.AI API Collection",
+    "description": "Complete API collection for Hired.AI with Rate Limiter testing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Auth (authLimiter: 10 req / 15 min)",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 or 201', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "if (res.token) { pm.collectionVariables.set('token', res.token); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"testuser@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/users/register", "host": ["{{baseUrl}}"], "path": ["api", "users", "register"] }
+          }
+        },
+        {
+          "name": "Login User ✅",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "if (res.token) {",
+                  "  pm.collectionVariables.set('token', res.token);",
+                  "  console.log('Token saved:', res.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testuser@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/users/login", "host": ["{{baseUrl}}"], "path": ["api", "users", "login"] }
+          }
+        },
+        {
+          "name": "Get User Data (Protected)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/users/data", "host": ["{{baseUrl}}"], "path": ["api", "users", "data"] }
+          }
+        },
+        {
+          "name": "🚫 Rate Limit Test — Login (Run 11 times)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Rate limit hit returns 429', function () {",
+                  "  if (pm.response.code === 429) {",
+                  "    console.log('✅ Rate limiter is WORKING! Got 429.');",
+                  "    pm.expect(pm.response.code).to.equal(429);",
+                  "  } else {",
+                  "    console.log('Request', pm.response.code, '— keep sending...');",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"wrong@example.com\",\n  \"password\": \"wrongpassword\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/users/login", "host": ["{{baseUrl}}"], "path": ["api", "users", "login"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🎯 Interviews (aiLimiter: 20 req / 1 hour)",
+      "item": [
+        {
+          "name": "Create Interview ✅",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 or 201', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "const res = pm.response.json();",
+                  "if (res._id) { pm.collectionVariables.set('interviewId', res._id); }",
+                  "if (res.interview && res.interview._id) { pm.collectionVariables.set('interviewId', res.interview._id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"Frontend Developer\",\n  \"experience\": \"1 year\",\n  \"techStack\": [\"React\", \"JavaScript\"]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/interviews", "host": ["{{baseUrl}}"], "path": ["api", "interviews"] }
+          }
+        },
+        {
+          "name": "List My Interviews",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/interviews", "host": ["{{baseUrl}}"], "path": ["api", "interviews"] }
+          }
+        },
+        {
+          "name": "Get Interview by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/interviews/{{interviewId}}", "host": ["{{baseUrl}}"], "path": ["api", "interviews", "{{interviewId}}"] }
+          }
+        },
+        {
+          "name": "Submit Answers",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": [\n    { \"questionIndex\": 0, \"answer\": \"React is a JavaScript library for building UIs\" },\n    { \"questionIndex\": 1, \"answer\": \"Virtual DOM is a lightweight copy of the real DOM\" }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/interviews/{{interviewId}}/submit", "host": ["{{baseUrl}}"], "path": ["api", "interviews", "{{interviewId}}", "submit"] }
+          }
+        },
+        {
+          "name": "Delete Interview",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/interviews/{{interviewId}}", "host": ["{{baseUrl}}"], "path": ["api", "interviews", "{{interviewId}}"] }
+          }
+        },
+        {
+          "name": "🚫 Rate Limit Test — AI Route (Run 21 times)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('AI rate limit check', function () {",
+                  "  if (pm.response.code === 429) {",
+                  "    console.log('✅ AI Rate limiter WORKING! Got 429 after 20 requests.');",
+                  "  } else {",
+                  "    const remaining = pm.response.headers.get('RateLimit-Remaining');",
+                  "    console.log('Remaining AI requests:', remaining);",
+                  "  }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"Backend Developer\",\n  \"experience\": \"2 years\",\n  \"techStack\": [\"Node.js\", \"MongoDB\"]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/interviews", "host": ["{{baseUrl}}"], "path": ["api", "interviews"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🤖 Chatbot (aiLimiter: 20 req / 1 hour)",
+      "item": [
+        {
+          "name": "Chatbot Reply ✅",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"What are common React interview questions?\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/chatbot", "host": ["{{baseUrl}}"], "path": ["api", "chatbot"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📚 Problems (generalLimiter: 100 req / 15 min)",
+      "item": [
+        {
+          "name": "Get All Problems",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/problems", "host": ["{{baseUrl}}"], "path": ["api", "problems"] }
+          }
+        },
+        {
+          "name": "Get User Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/problems/stats", "host": ["{{baseUrl}}"], "path": ["api", "problems", "stats"] }
+          }
+        },
+        {
+          "name": "Get Problem by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/problems/{{problemId}}", "host": ["{{baseUrl}}"], "path": ["api", "problems", "{{problemId}}"] }
+          }
+        },
+        {
+          "name": "Toggle Problem Status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/problems/{{problemId}}/toggle", "host": ["{{baseUrl}}"], "path": ["api", "problems", "{{problemId}}", "toggle"] }
+          }
+        },
+        {
+          "name": "Add Problem (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Two Sum\",\n  \"difficulty\": \"Easy\",\n  \"category\": \"Array\",\n  \"link\": \"https://leetcode.com/problems/two-sum\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/problems/admin/add", "host": ["{{baseUrl}}"], "path": ["api", "problems", "admin", "add"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏥 Health & Debug",
+      "item": [
+        {
+          "name": "Server Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Server is live', function () {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  console.log('✅ Server is running!');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/", "host": ["{{baseUrl}}"], "path": [""] }
+          }
+        },
+        {
+          "name": "Gemini Debug Test",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/debug/gemini-test", "host": ["{{baseUrl}}"], "path": ["debug", "gemini-test"] }
+          }
+        },
+        {
+          "name": "🚫 Rate Limit Headers Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('RateLimit headers present', function () {",
+                  "  const limit = pm.response.headers.get('RateLimit-Limit');",
+                  "  const remaining = pm.response.headers.get('RateLimit-Remaining');",
+                  "  console.log('RateLimit-Limit:', limit);",
+                  "  console.log('RateLimit-Remaining:', remaining);",
+                  "  pm.expect(limit).to.not.be.null;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/", "host": ["{{baseUrl}}"], "path": [""] }
+          }
+        }
+      ]
+    }
+  ]
+}

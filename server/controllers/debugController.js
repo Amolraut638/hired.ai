@@ -1,44 +1,48 @@
-import fetch from 'node-fetch';
-
+// Diagnostic endpoint. Disabled unless DEBUG_SECRET is set, and it never returns the API key.
 const GEMINI_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || null;
+const BASE = "https://generativelanguage.googleapis.com/v1beta";
 
 export const geminiTest = async (req, res) => {
   try {
-    const secret = req.query.secret;
-    if (process.env.DEBUG_SECRET && process.env.DEBUG_SECRET !== secret) {
-      return res.status(403).json({ success: false, message: 'Forbidden' });
+    const secret = process.env.DEBUG_SECRET;
+    if (!secret) return res.status(404).json({ message: "Not found" });
+    if (req.query.secret !== secret) {
+      return res.status(403).json({ success: false, message: "Forbidden" });
+    }
+    if (!GEMINI_KEY) {
+      return res.status(400).json({ success: false, message: "GEMINI_API_KEY not set" });
     }
 
-    if (!GEMINI_KEY) return res.status(400).json({ success: false, message: 'GEMINI_API_KEY not set' });
+    const headers = { "Content-Type": "application/json", "x-goog-api-key": GEMINI_KEY };
+    const model = process.env.GEMINI_MODEL || "gemini-flash-latest";
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
-    const prompt = 'Generate 1 short interview question for "debug test"';
-
-    const listModelsUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_KEY}`;
-    let availableModels = 'Check failed';
+    let availableModels = "list failed";
     try {
-        const lresp = await fetch(listModelsUrl);
-        availableModels = await lresp.json();
-    } catch(e) {}
+      const r = await fetch(`${BASE}/models`, { headers });
+      const j = await r.json();
+      availableModels = (j.models || [])
+        .filter((m) => (m.supportedGenerationMethods || []).includes("generateContent"))
+        .map((m) => m.name);
+    } catch {
+      /* ignore */
+    }
 
-    const attempts = [];
+    let attempt;
     try {
-      const resp = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const r = await fetch(`${BASE}/models/${model}:generateContent`, {
+        method: "POST",
+        headers,
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.2, maxOutputTokens: 200 }
+          contents: [{ parts: [{ text: "Say OK" }] }],
+          generationConfig: { maxOutputTokens: 50 },
         }),
       });
-
-      const text = await resp.text();
-      attempts.push({ url, status: resp.status, ok: resp.ok, body: text.slice(0, 5000) });
+      attempt = { model, status: r.status, ok: r.ok, body: (await r.text()).slice(0, 1000) };
     } catch (err) {
-      attempts.push({ url, status: 'error', ok: false, error: err.message || String(err) });
+      attempt = { model, ok: false, error: err.message };
     }
 
-    return res.json({ success: true, availableModels, attempts });
+    return res.json({ success: true, availableModels, attempt });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }
